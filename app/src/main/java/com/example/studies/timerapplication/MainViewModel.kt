@@ -4,40 +4,36 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.studies.timerapplication.util.event.SingleLiveEvent
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.util.Timer
-import java.util.TimerTask
 
 class MainViewModel : ViewModel() {
 
     companion object {
-        const val DEFAULT_TIME_ElAPSED = 10000L
+        const val DEFAULT_TIME_ElAPSED = 2000L
     }
 
-    private var task: TimerTask? = null
-    private var timer: Timer? = null
+    private var job: Job? = null
 
     private val _showToastEventFlow = SingleLiveEvent<Unit>()
     val showToastEventFlow: LiveData<Unit> = _showToastEventFlow
 
     fun cancelTimer() {
-        task?.cancel()
-        timer?.cancel()
+        job?.cancel()
     }
 
     fun scheduleNewTimer() {
-        task = object : TimerTask() {
-            override fun run() {
-                _showToastEventFlow.postValue(Unit)
-            }
+        job?.cancel()
+        job = viewModelScope.launch {
+            delay(DEFAULT_TIME_ElAPSED)
+            _showToastEventFlow.value = Unit
         }
-        timer = Timer("Timer")
-        timer?.schedule(task, DEFAULT_TIME_ElAPSED)
     }
 
     override fun onCleared() {
-        cancelTimer()
+        viewModelScope.cancel()
         super.onCleared()
     }
 }
