@@ -4,12 +4,17 @@ import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.example.studies.timerapplication.util.event.SingleLiveEvent
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.Volatile
+
 
 class MainViewModel : ViewModel() {
 
     companion object {
-        const val DEFAULT_TIME_ElAPSED = 10_000L
+        const val DEFAULT_TIME_ElAPSED = 20_000L
     }
 
     private var task: Runnable? = null
@@ -19,6 +24,11 @@ class MainViewModel : ViewModel() {
 
     private val _showToastEventFlow = SingleLiveEvent<Unit>()
     val showToastEventFlow: LiveData<Unit> = _showToastEventFlow
+
+    private var executorService: ExecutorService = ThreadPoolExecutor(
+        1, 1, 0L, TimeUnit.MILLISECONDS,
+        LinkedBlockingQueue()
+    )
 
     fun cancelTimer() {
         task = null
@@ -33,13 +43,13 @@ class MainViewModel : ViewModel() {
                 _showToastEventFlow.postValue(Unit)
             }
         }
-        val thread = Thread(task)
-        thread.start()
+        executorService.execute(task)
         lastClickedTime = System.currentTimeMillis()
     }
 
     override fun onCleared() {
         task = null
+        executorService.shutdown()
         super.onCleared()
     }
 }
