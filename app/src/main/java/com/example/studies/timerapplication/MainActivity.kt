@@ -5,6 +5,8 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
+import com.example.studies.timerapplication.MainViewModel.Companion.DEFAULT_TIME_ElAPSED
+import kotlin.math.round
 
 
 class MainActivity : AppCompatActivity() {
@@ -27,7 +29,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun initObservers() {
         viewmodel?.showToastEventFlow?.observe(this) {
-            Toast.makeText(this, "Clicking stopped 10 seconds ago", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                this,
+                "Clicking stopped ${round((DEFAULT_TIME_ElAPSED / 1_000).toDouble()).toInt()} seconds ago",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
